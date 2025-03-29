@@ -1,4 +1,4 @@
-const clientId = "3b10571d04df469497058c0eed97af72";
+const clientId = "GET YOUR OWN KEY";
 const redirectUri = window.location.origin;
 
 let accessToken;
