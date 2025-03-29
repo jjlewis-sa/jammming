@@ -35,3 +35,8 @@
   font-weight: 300;
   color: rgba(256, 256, 256, 0.8);
 }
+.Track-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

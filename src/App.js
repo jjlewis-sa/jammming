@@ -9,101 +9,66 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [playlistName, setPlaylistName] = useState('New Playlist');
   const [playlistTracks, setPlaylistTracks] = useState([]);
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if we're returning from Spotify auth
-    const loadUserProfile = async () => {
-      try {
-        const userProfile = await Spotify.getUserProfile();
-        setUser(userProfile);
-      } catch (error) {
-        console.error('Error loading user profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserProfile();
+    // Check for a saved search term when the component mounts
+    const savedSearchTerm = Spotify.getSavedSearchTerm();
+    if (savedSearchTerm) {
+      search(savedSearchTerm);
+    }
   }, []);
 
-  // Add track to playlist
   const addTrack = (track) => {
-    if (playlistTracks.find(savedTrack => savedTrack.id === track.id)) {
+    if (playlistTracks.some(savedTrack => savedTrack.id === track.id)) {
       return;
     }
     setPlaylistTracks([...playlistTracks, track]);
   };
 
-  // Remove track from playlist
   const removeTrack = (track) => {
     setPlaylistTracks(playlistTracks.filter(savedTrack => savedTrack.id !== track.id));
   };
 
-  // Update playlist name
   const updatePlaylistName = (name) => {
     setPlaylistName(name);
   };
 
-  // Save playlist to Spotify
   const savePlaylist = async () => {
-    const trackURIs = playlistTracks.map(track => track.uri);
-    const success = await Spotify.savePlaylist(playlistName, trackURIs);
-    
-    if (success) {
-      setPlaylistName('New Playlist');
-      setPlaylistTracks([]);
-      alert('Playlist saved successfully!');
-    } else {
-      alert('Failed to save playlist. Please try again.');
+    const trackUris = playlistTracks.map(track => track.uri);
+    if (trackUris.length) {
+      setIsLoading(true);
+      const success = await Spotify.savePlaylist(playlistName, trackUris);
+      setIsLoading(false);
+      if (success) {
+        setPlaylistName('New Playlist');
+        setPlaylistTracks([]);
+      }
     }
   };
 
-  // Search Spotify
   const search = async (term) => {
-    if (!term.trim()) return;
-    
-    try {
-      const results = await Spotify.search(term);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Error searching tracks:', error);
-      setSearchResults([]);
-    }
+    setIsLoading(true);
+    const results = await Spotify.search(term);
+    setSearchResults(results);
+    setIsLoading(false);
   };
-
-  if (isLoading) {
-    return <div className="App"><h1>Loading...</h1></div>;
-  }
 
   return (
-    <div className="App">
-      <h1>Jammming</h1>
-      {user && (
-        <div className="user-profile">
-          <p>Welcome, {user.display_name}!</p>
-          {user.images && user.images.length > 0 && (
-            <img 
-              src={user.images[0].url} 
-              alt="Profile" 
-              className="profile-image"
-              width="40"
-              height="40"
-            />
-          )}
+    <div>
+      <h1>Ja<span className="highlight">mmm</span>ing</h1>
+      <div className="App">
+        <SearchBar onSearch={search} />
+        <div className="App-playlist">
+          <SearchResults searchResults={searchResults} onAdd={addTrack} />
+          <Playlist 
+            playlistName={playlistName} 
+            playlistTracks={playlistTracks} 
+            onRemove={removeTrack} 
+            onNameChange={updatePlaylistName} 
+            onSave={savePlaylist} 
+          />
         </div>
-      )}
-      <SearchBar onSearch={search} />
-      <div className="App-playlist">
-        <SearchResults searchResults={searchResults} onAdd={addTrack} />
-        <Playlist 
-          playlistName={playlistName} 
-          playlistTracks={playlistTracks} 
-          onRemove={removeTrack} 
-          onNameChange={updatePlaylistName}
-          onSave={savePlaylist}
-        />
       </div>
     </div>
   );

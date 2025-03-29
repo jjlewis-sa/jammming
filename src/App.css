@@ -1,16 +1,23 @@
 #root{
   background-color: #121212; /* Spotify black */
   color: white; 
+  text-align: center;
+  background-image: url('spotify-stats.png');
+    background-size: cover;
+    background-position: center;
+  background-attachment: fixed;
 }
 .App-playlist {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   overflow-y: scroll;
   width: auto;
+  max-width: 500px;
   max-height: 950px;
   padding: 2.27rem 1.16rem;
   background-color: rgba(1, 12, 63, 0.7);
   box-shadow: 0 4px 2px 2px #000000;
+  margin: 0 auto; /* Centering the playlist */
 }
 .App {
   text-align: center;

@@ -1,5 +1,5 @@
-const clientId = "GET YOUR OWN KEY"; // Replace with your Spotify client ID
-const redirectUri = window.location.origin; // Uses the current origin as redirect URI
+const clientId = "3b10571d04df469497058c0eed97af72";
+const redirectUri = window.location.origin;
 
 let accessToken;
 
@@ -32,11 +32,17 @@ const Spotify = {
         return accessToken;
       } else {
         this.redirectToAuthCodeFlow();
+        return null;
       }
     }
   },
 
-  async redirectToAuthCodeFlow() {
+  async redirectToAuthCodeFlow(searchTerm) {
+    // Save the search term before redirecting
+    if (searchTerm) {
+      localStorage.setItem("jammming_search_term", searchTerm);
+    }
+    
     const verifier = this.generateCodeVerifier(128);
     const challenge = await this.generateCodeChallenge(verifier);
     const state = this.generateCodeVerifier(16);
@@ -90,6 +96,51 @@ const Spotify = {
       return null;
     }
   },
+// Add a method to retrieve the saved search term
+getSavedSearchTerm() {
+  const searchTerm = localStorage.getItem("jammming_search_term");
+  // Clear the saved search term after retrieving it
+  if (searchTerm) {
+    localStorage.removeItem("jammming_search_term");
+  }
+  return searchTerm;
+},
+
+async search(term) {
+  // If no term is provided but we're redirecting back from auth, save the term
+  if (!term) {
+    return [];
+  }
+  
+  const accessToken = await this.getAccessToken();
+  if (!accessToken) {
+    // If we're being redirected for auth, the search will continue after redirect
+    this.redirectToAuthCodeFlow(term);
+    return [];
+  }
+
+  try {
+    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    
+    const jsonResponse = await response.json();
+    if (!jsonResponse.tracks) {
+      return [];
+    }
+    
+    return jsonResponse.tracks.items.map(track => ({
+      id: track.id,
+      name: track.name,
+      artist: track.artists[0].name,
+      album: track.album.name,
+      uri: track.uri
+    }));
+  } catch (error) {
+    console.error('Error searching tracks:', error);
+    return [];
+  }
+},
 
   generateCodeVerifier(length) {
     let text = '';
@@ -127,7 +178,7 @@ const Spotify = {
   async search(term) {
     const accessToken = await this.getAccessToken();
     if (!accessToken) return [];
-
+  
     try {
       const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -143,7 +194,8 @@ const Spotify = {
         name: track.name,
         artist: track.artists[0].name,
         album: track.album.name,
-        uri: track.uri
+        uri: track.uri,
+        previewUrl: track.preview_url // Add preview URL to the returned track object
       }));
     } catch (error) {
       console.error('Error searching tracks:', error);

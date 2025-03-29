@@ -1,41 +1,36 @@
 import React from 'react';
 import './Track.css';
+import AudioPreview from '../AudioPreview/AudioPreview';
 
-class Track extends React.Component {
-  constructor(props) {
-    super(props);
-    
-    this.addTrack = this.addTrack.bind(this);
-    this.removeTrack = this.removeTrack.bind(this);
-  }
+function Track(props) {
+  const addTrack = () => {
+    props.onAdd(props.track);
+  };
 
-  renderAction() {
-    if (this.props.isRemoval) {
-      return <button className="Track-action" onClick={this.removeTrack}>-</button>;
+  const removeTrack = () => {
+    props.onRemove(props.track);
+  };
+
+  const renderAction = () => {
+    if (props.isRemoval) {
+      return <button className="Track-action" onClick={removeTrack}>-</button>;
     } else {
-      return <button className="Track-action" onClick={this.addTrack}>+</button>;
+      return <button className="Track-action" onClick={addTrack}>+</button>;
     }
-  }
+  };
 
-  addTrack() {
-    this.props.onAdd(this.props.track);
-  }
-
-  removeTrack() {
-    this.props.onRemove(this.props.track);
-  }
-
-  render() {
-    return (
-      <div className="Track">
-        <div className="Track-information">
-          <h3>{this.props.track.name}</h3>
-          <p>{this.props.track.artist} | {this.props.track.album}</p>
+  return (
+    <div className="Track">
+      <div className="Track-information">
+        <div className="Track-preview-container">
+          <AudioPreview previewUrl={props.track.previewUrl} />
+          <h3>{props.track.name}</h3>
         </div>
-        {this.renderAction()}
+        <p>{props.track.artist} | {props.track.album}</p>
       </div>
-    );
-  }
+      {renderAction()}
+    </div>
+  );
 }
 
 export default Track;
