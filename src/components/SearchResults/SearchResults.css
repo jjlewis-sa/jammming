@@ -1,5 +1,5 @@
 .SearchResults {
-    width: 50%;
+    width: auto;
     height: 950px;
     overflow-y: scroll;
     padding: .88rem;

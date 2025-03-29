@@ -1,4 +1,4 @@
-const clientId = "YOUR_CLIENT_ID"; // Replace with your Spotify client ID
+const clientId = "3b10571d04df469497058c0eed97af72"; // Replace with your Spotify client ID
 const redirectUri = window.location.origin; // Uses the current origin as redirect URI
 
 let accessToken;
